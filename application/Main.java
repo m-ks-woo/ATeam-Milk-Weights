@@ -7,9 +7,12 @@ import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -60,8 +63,12 @@ public class Main extends Application {
           File selected = fileChooser.showOpenDialog(primaryStage);
           try {
             farmTable.loadData(selected);
+            System.out.println("loaded");
             dataScreen(primaryStage);
+            System.out.println("gamer");
           } catch (Exception ex) {
+            System.out.println("error");
+            ex.printStackTrace();
             errorPopup("There was an error reading the file.", primaryStage);
           }
         }
@@ -89,7 +96,45 @@ public class Main extends Application {
      * @param primaryStage
      */
     public void dataScreen(Stage primaryStage) {
-      GridPane root = new GridPane();
+      VBox root = new VBox(10);
+      root.setAlignment(Pos.CENTER);
+      
+      HBox reportRow = new HBox(20);
+      reportRow.setAlignment(Pos.CENTER);
+      Label reportLabel = new Label("Generate Report: ");
+      reportLabel.setFont(new Font("Cambria", 20));
+      Button farm = new Button("Farm");
+      Button annual = new Button("Annual");
+      Button monthly = new Button("Monthly");
+      reportRow.getChildren().add(reportLabel);
+      reportRow.getChildren().add(farm);
+      reportRow.getChildren().add(annual);
+      reportRow.getChildren().add(monthly);
+      
+      HBox tableRow = new HBox(30);
+      tableRow.setAlignment(Pos.CENTER);
+      TableView<String> tableView = new TableView<>();
+      VBox sortOptions = new VBox();
+      sortOptions.setAlignment(Pos.TOP_CENTER);
+      Label sortLabel = new Label("Sort By:");
+      sortLabel.setFont(new Font("Cambria", 20));
+      ComboBox<String> options = new ComboBox<>();
+      sortOptions.getChildren().add(sortLabel);
+      sortOptions.getChildren().add(options);
+      tableRow.getChildren().add(tableView);
+      tableRow.getChildren().add(sortOptions);
+      
+      Button add = new Button("Add");
+      Button del = new Button("Del");
+      root.getChildren().add(reportRow);
+      root.getChildren().add(tableRow);
+      root.getChildren().add(add);
+      root.getChildren().add(del);
+      
+      Scene dataScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+      
+      primaryStage.setScene(dataScene);
+      primaryStage.show();
     }
 
     /**
