@@ -8,11 +8,14 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
 
 /**
@@ -55,8 +58,12 @@ public class Main extends Application {
         @Override
         public void handle(ActionEvent arg0) {
           File selected = fileChooser.showOpenDialog(primaryStage);
-          farmTable.loadData(selected);
-          dataScreen(primaryStage);
+          try {
+            farmTable.loadData(selected);
+            dataScreen(primaryStage);
+          } catch (Exception ex) {
+            errorPopup("There was an error reading the file.", primaryStage);
+          }
         }
       });
       Region spacer = new Region();
@@ -73,8 +80,16 @@ public class Main extends Application {
       primaryStage.show();
     }
     
+    public void errorPopup(String errorText, Stage primaryStage) {
+      // display error popup
+    }
+    
+    /**
+     * Displays the data loaded in from the home screen.
+     * @param primaryStage
+     */
     public void dataScreen(Stage primaryStage) {
-      
+      GridPane root = new GridPane();
     }
 
     /**
