@@ -86,4 +86,8 @@ public class Farm {
       }
     }
   }
+  
+  public ArrayList<Entry> getEntries() {
+    return entries;
+  }
 }

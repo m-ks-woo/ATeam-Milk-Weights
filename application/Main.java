@@ -14,17 +14,17 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
-import javafx.stage.Popup;
 import javafx.stage.Stage;
 
 /**
@@ -47,7 +47,7 @@ public class Main extends Application {
    */
   @Override
   public void start(Stage primaryStage) throws Exception {
-    VBox root = new VBox();
+    VBox root = new VBox(10);
 
     root.setAlignment(Pos.CENTER);
 
@@ -70,14 +70,18 @@ public class Main extends Application {
         File selected = fileChooser.showOpenDialog(primaryStage);
         try {
           farmTable.loadData(selected);
-          //System.out.println("loaded");
           dataScreen(primaryStage);
-          //System.out.println("gamer");
         } catch (Exception ex) {
-          //System.out.println("error");
           ex.printStackTrace();
-          errorPopup("There was an error reading the file.", primaryStage);
+          errorPopup("There was an error reading the file.");
         }
+      }
+    });
+    Button skipButton = new Button("Skip");
+    skipButton.setOnAction(new EventHandler<ActionEvent>() {
+      @Override
+      public void handle(ActionEvent arg0) {
+        dataScreen(primaryStage);
       }
     });
     Region spacer = new Region();
@@ -86,6 +90,7 @@ public class Main extends Application {
     root.getChildren().add(spacer);
     root.getChildren().add(promptLabel);
     root.getChildren().add(uploadButton);
+    root.getChildren().add(skipButton);
     Scene mainScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // Add the stuff and set the primary stage
@@ -94,7 +99,7 @@ public class Main extends Application {
     primaryStage.show();
   }
 
-  public void errorPopup(String errorText, Stage primaryStage) { // Didn't use primaryStage, please
+  public void errorPopup(String errorText) { // Didn't use primaryStage, please
                                                                  // advise
     // display error popup
     Alert error = new Alert(AlertType.ERROR);
@@ -135,7 +140,8 @@ public class Main extends Application {
 
     HBox tableRow = new HBox(30);
     tableRow.setAlignment(Pos.CENTER);
-    TableView<String> tableView = new TableView<>();
+    TableView<Entry> tableView = new TableView<>();
+    
     VBox sortOptions = new VBox();
     sortOptions.setAlignment(Pos.TOP_CENTER);
     Label sortLabel = new Label("Sort By:");
@@ -145,11 +151,48 @@ public class Main extends Application {
     sortOptions.getChildren().add(options);
     tableRow.getChildren().add(tableView);
     tableRow.getChildren().add(sortOptions);
+    
+    TableColumn<Entry, Entry> dateCol = new TableColumn<>("Date");
+    dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
+    tableView.getColumns().add(dateCol);
+    // change to have each column be a farm
+    TableColumn<Entry, Entry> farmCol = new TableColumn<>("Farm ID");
+    farmCol.setCellValueFactory(new PropertyValueFactory<>("farmId"));
+    tableView.getColumns().add(farmCol);
+    TableColumn<Entry, Entry> weightCol = new TableColumn<>("Weight");
+    weightCol.setCellValueFactory(new PropertyValueFactory<>("weight"));
+    tableView.getColumns().add(weightCol);
+    for (String farmId : farmTable.getFarms().keySet()) {
+//      TableColumn<Entry, Entry> farmCol = new TableColumn<>(farmId);
+//      farmCol.setCellValueFactory(new PropertyValueFactory<>("weight"));
+//      tableView.getColumns().add(farmCol);
+      for (Entry e : farmTable.getFarms().get(farmId).getEntries()) {
+        tableView.getItems().add(e);
+      }
+    }
 
     Button add = new Button("Add");
     Button del = new Button("Del");
+    
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+    Button uploadButton = new Button("Upload Files Here");
+    uploadButton.setOnAction(new EventHandler<ActionEvent>() {
+      @Override
+      public void handle(ActionEvent arg0) {
+        File selected = fileChooser.showOpenDialog(primaryStage);
+        try {
+          farmTable.loadData(selected);
+          dataScreen(primaryStage);
+        } catch (Exception ex) {
+          ex.printStackTrace();
+          errorPopup("There was an error reading the file.");
+        }
+      }
+    });
     root.getChildren().add(reportRow);
     root.getChildren().add(tableRow);
+    root.getChildren().add(uploadButton);
     root.getChildren().add(add);
     root.getChildren().add(del);
 
