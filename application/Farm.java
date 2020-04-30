@@ -42,6 +42,12 @@ public class Farm {
    * @param entry the Entry to add
    */
   public void addEntry(Entry entry) {
+    for (Entry e : entries) {
+      if (e.getDate().equals(entry.getDate())) {
+        this.editEntry(entry.getDate(), entry.getWeight());
+        return;
+      }
+    }
     entries.add(entry);
   }
   
@@ -51,27 +57,37 @@ public class Farm {
    * @param weight the recorded weight on the date
    */
   public void addEntry(LocalDate date, int weight) {
+    for (Entry e : entries) {
+      if (e.getDate().equals(date)) {
+        this.editEntry(date, weight);
+        return;
+      }
+    }
     entries.add(new Entry(date, this.id, weight));
   }
   
   /**
    * Removes a given entry from this Farm's Entry ArrayList
    * @param entry the Entry to remove
+   * @return true if the entry was successfully removed and false otherwise
    */
-  public void removeEntry(Entry entry) {
-    entries.remove(entry);
+  public boolean removeEntry(Entry entry) {
+    return entries.remove(entry);
   }
   
   /**
    * Removes the entry at a given date from this Farm's Entry ArrayList
    * @param date the date of the Entry to remove
+   * @return true if the entry was successfully removed and false otherwise
    */
-  public void removeEntry(LocalDate date) {
+  public boolean removeEntry(LocalDate date) {
     for (int i = 0; i < entries.size(); i++) {
       if (entries.get(i).getDate().equals(date)) {
         entries.remove(i);
+        return true;
       }
     }
+    return false;
   }
   
   /**
@@ -87,6 +103,10 @@ public class Farm {
     }
   }
   
+  /**
+   * Returns the ArrayList of entries associated with this farm
+   * @return the ArrayList of entries associated with this farm
+   */
   public ArrayList<Entry> getEntries() {
     return entries;
   }

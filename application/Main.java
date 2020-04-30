@@ -1,6 +1,9 @@
 package application;
 
 import java.io.File;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -16,6 +19,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.BorderPane;
@@ -142,37 +146,67 @@ public class Main extends Application {
     tableRow.setAlignment(Pos.CENTER);
     TableView<Entry> tableView = new TableView<>();
     
-    VBox sortOptions = new VBox();
-    sortOptions.setAlignment(Pos.TOP_CENTER);
-    Label sortLabel = new Label("Sort By:");
-    sortLabel.setFont(new Font("Cambria", 20));
-    ComboBox<String> options = new ComboBox<>();
-    sortOptions.getChildren().add(sortLabel);
-    sortOptions.getChildren().add(options);
-    tableRow.getChildren().add(tableView);
-    tableRow.getChildren().add(sortOptions);
-    
-    TableColumn<Entry, Entry> dateCol = new TableColumn<>("Date");
-    dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
-    tableView.getColumns().add(dateCol);
-    // change to have each column be a farm
-    TableColumn<Entry, Entry> farmCol = new TableColumn<>("Farm ID");
-    farmCol.setCellValueFactory(new PropertyValueFactory<>("farmId"));
-    tableView.getColumns().add(farmCol);
-    TableColumn<Entry, Entry> weightCol = new TableColumn<>("Weight");
-    weightCol.setCellValueFactory(new PropertyValueFactory<>("weight"));
-    tableView.getColumns().add(weightCol);
-    for (String farmId : farmTable.getFarms().keySet()) {
-//      TableColumn<Entry, Entry> farmCol = new TableColumn<>(farmId);
-//      farmCol.setCellValueFactory(new PropertyValueFactory<>("weight"));
-//      tableView.getColumns().add(farmCol);
-      for (Entry e : farmTable.getFarms().get(farmId).getEntries()) {
-        tableView.getItems().add(e);
-      }
-    }
-
+    VBox buttons = new VBox(10);
+    buttons.setAlignment(Pos.CENTER);
+    HBox farmIdBox = new HBox(5);
+    farmIdBox.setAlignment(Pos.CENTER_LEFT);
+    Label farmIdLabel = new Label("Farm ID:");
+    TextField farmIdField = new TextField();
+    farmIdBox.getChildren().addAll(farmIdLabel, farmIdField);
+    HBox dateBox = new HBox(5);
+    dateBox.setAlignment(Pos.CENTER_LEFT);
+    Label dateLabel = new Label("Date:");
+    TextField dateField = new TextField();
+    dateBox.getChildren().addAll(dateLabel, dateField);
+    HBox weightBox = new HBox(5);
+    weightBox.setAlignment(Pos.CENTER_LEFT);
+    Label weightLabel = new Label("Weight:");
+    TextField weightField = new TextField();
+    weightBox.getChildren().addAll(weightLabel, weightField);
     Button add = new Button("Add");
+    add.setOnAction(new EventHandler<ActionEvent>() {
+      @Override
+      public void handle(ActionEvent arg0) {
+        String farmId = farmIdField.getText();
+        LocalDate date;
+        int weight;
+        try {
+          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-M-d");
+          date = LocalDate.parse(dateField.getText(), formatter);
+        } catch (DateTimeParseException e) {
+          errorPopup("Please enter the date in the form yyyy-M-d.");
+          return;
+        }
+        try {
+          weight = Integer.parseInt(weightField.getText());
+        } catch (NumberFormatException e) {
+          errorPopup("Please enter an integer for the weight.");
+          return;
+        }
+        farmTable.addEntry(date, farmId, weight);
+        dataScreen(primaryStage);
+      }
+    });
     Button del = new Button("Del");
+    del.setOnAction(new EventHandler<ActionEvent>() {
+      @Override
+      public void handle(ActionEvent arg0) {
+        String farmId = farmIdField.getText();
+        LocalDate date;
+        try {
+          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-M-d");
+          date = LocalDate.parse(dateField.getText(), formatter);
+        } catch (DateTimeParseException e) {
+          errorPopup("Please enter the date in the form yyyy-M-d.");
+          return;
+        }
+        if (farmTable.removeEntry(date, farmId)) {
+          dataScreen(primaryStage);
+        } else {
+          errorPopup("The entry could not be removed");
+        }
+      }
+    });
     
     FileChooser fileChooser = new FileChooser();
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
@@ -190,11 +224,31 @@ public class Main extends Application {
         }
       }
     });
+    buttons.getChildren().addAll(farmIdBox, dateBox, weightBox, add, del, uploadButton);
+    
+    
+    tableRow.getChildren().add(tableView);
+    tableRow.getChildren().add(buttons);
+    
+    TableColumn<Entry, Entry> dateCol = new TableColumn<>("Date");
+    dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
+    tableView.getColumns().add(dateCol);
+    // change to have each column be a farm
+    TableColumn<Entry, Entry> farmCol = new TableColumn<>("Farm ID");
+    farmCol.setCellValueFactory(new PropertyValueFactory<>("farmId"));
+    tableView.getColumns().add(farmCol);
+    TableColumn<Entry, Entry> weightCol = new TableColumn<>("Weight");
+    weightCol.setCellValueFactory(new PropertyValueFactory<>("weight"));
+    tableView.getColumns().add(weightCol);
+    for (String farmId : farmTable.getFarms().keySet()) {
+      for (Entry e : farmTable.getFarms().get(farmId).getEntries()) {
+        tableView.getItems().add(e);
+      }
+    }
+    tableView.getSortOrder().addAll(dateCol, farmCol, weightCol);
+    
     root.getChildren().add(reportRow);
     root.getChildren().add(tableRow);
-    root.getChildren().add(uploadButton);
-    root.getChildren().add(add);
-    root.getChildren().add(del);
 
     Scene dataScene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
 
